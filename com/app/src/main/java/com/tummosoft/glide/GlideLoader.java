@@ -4,7 +4,6 @@ import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.Events;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
-import anywheresoftware.b4a.BALayout.LayoutParams;
 import anywheresoftware.b4a.objects.ImageViewWrapper;
 import anywheresoftware.b4a.objects.drawable.CanvasWrapper.BitmapWrapper;
 import anywheresoftware.b4a.objects.streams.File;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.load.MultiTransformation;
 import com.bumptech.glide.load.resource.bitmap.Rotate;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
@@ -21,27 +19,13 @@ import com.bumptech.glide.request.RequestOptions;
 import com.caverock.androidsvg.SVGParseException;
 
 import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.StrictMode;
-import android.view.DragEvent;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.DragShadowBuilder;
-import android.view.View.OnTouchListener;
-import android.view.animation.Animation;
 import android.widget.ImageView;
-import android.content.ClipData;
+import android.widget.ImageView.ScaleType;
 import android.graphics.Bitmap;
 
-import com.tummosoft.glide.GlideSVG;
-import com.tummosoft.glide.GlideClickEvent;
-import com.tummosoft.glide.TouchType;
-import com.tummosoft.glide.eventGestureDetector;
-
-@Version(2.01f)
+@Version(2.02f)
 @ShortName("GlideLoader")
 @Events(values={"Click", "OnTouch(X As Float, Y As Float) As Boolean",
 "OnDown(X As Float, Y As Float)", "OnDrag(X As Float, Y As Float)",
@@ -50,8 +34,6 @@ import com.tummosoft.glide.eventGestureDetector;
 public class GlideLoader {
     private ImageView mImageView = null;
     private BA mBA;
-    private String mEventClick;
-    private String mEventDragDrop;
     private int mGravity;
     public GlideGravity GlideTypes;
     public GlideFilterType FilterTypes;
@@ -99,8 +81,8 @@ public class GlideLoader {
     }
     
     private void SetOptions() {
-        int opt = getGlideType();
-       
+        int opt = getGlideType();        
+        callGlideType(opt);
         switch (opt) {
             case 2:
                 if (getShadown() == true) { 
@@ -156,7 +138,7 @@ public class GlideLoader {
         mImageView.setBackgroundColor(Color.parseColor("#00000000"));
         
         if (getTouchType() == 1) {
-            mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType()));
+            mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType(), getCornerRadius()));
         } else if (getTouchType() == 2) {
             mImageView.setLongClickable(true);    
             mImageView.setOnTouchListener(new EventOnTouch(mBA, eventname, mImageView));                   
@@ -176,7 +158,7 @@ public class GlideLoader {
         mImageView.setBackgroundColor(Color.parseColor("#00000000"));
         
         if (getTouchType() == 1) {
-            mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType()));
+            mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType(), getCornerRadius()));
         } else if (getTouchType() == 2) {
             mImageView.setLongClickable(true);    
             mImageView.setOnTouchListener(new EventOnTouch(mBA, eventname, mImageView));                   
@@ -212,7 +194,7 @@ public class GlideLoader {
         
         mImageView.setBackgroundColor(Color.parseColor("#00000000"));
         if (getTouchType() == 1) {
-            mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType()));
+            mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType(), getCornerRadius()));
         } else if (getTouchType() == 2) {
             mImageView.setLongClickable(true);    
             mImageView.setOnTouchListener(new EventOnTouch(mBA, eventname, mImageView));                   
@@ -359,18 +341,26 @@ public class GlideLoader {
 		return mGravity;
 	}
 
-	public void setGlideType(int value) {
+    private void callGlideType(int value) {
         if (value == 0) {
             options.centerCrop();     
         } else if (value == 1) {
             options.centerInside();
         } else if (value == 2) {
             options.circleCrop();           
-        } else if (value == 3) {
-            options.fitCenter();            
+        } else if (value == 3) {            
+            options.fitCenter();
+        } else if (value == 4) {  
+            mImageView.setScaleType(ScaleType.FIT_END);
+        } else if (value == 5) {  
+            mImageView.setScaleType(ScaleType.FIT_START);   
+        } else if (value == 6) {  
+            mImageView.setScaleType(ScaleType.FIT_XY);               
         }
-        //options.transform(transformation)
-		mGravity = value;
+    }
+
+	public void setGlideType(int value) {
+        mGravity = value;
 	}
    // -------------------------------------
 

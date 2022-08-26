@@ -1,28 +1,14 @@
 package com.tummosoft.glide;
 
-import android.R.color;
 import android.graphics.Bitmap;
-import android.graphics.BitmapShader;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Point;
 import android.graphics.RectF;
-import android.graphics.Shader;
-import android.graphics.Bitmap.Config;
-import androidx.annotation.NonNull;
-import anywheresoftware.b4a.BA;
 
-import static com.bumptech.glide.load.Key.CHARSET;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
-import com.bumptech.glide.load.resource.bitmap.TransformationUtils;
 
 import java.security.MessageDigest;
-import com.bumptech.glide.util.Util;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 
 public class BorderImage extends BitmapTransformation {
     // The version of this transformation, incremented to correct an error in a previous version.
@@ -39,8 +25,7 @@ public class BorderImage extends BitmapTransformation {
         mBorderWidth = borderWidth;
         mColor = color;
         mRadius = radius;
-        mBackground = bgk;  
-            
+        mBackground = bgk;
     }
     
     protected Bitmap addBorder(Bitmap srcBitmap, int borderWidth, int borderColor, int radius){

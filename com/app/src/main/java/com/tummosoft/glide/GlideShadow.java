@@ -42,8 +42,7 @@ public class GlideShadow extends BitmapTransformation {
     public void updateDiskCacheKey(@NonNull MessageDigest messageDigest) {
         messageDigest.update(ID_BYTES);
     }
-    
-    
+        
     protected Bitmap addShadow(Bitmap srcBitmap, int borderWidth, int borderColor, int radius){
         Bitmap bmpWithBorder = Bitmap.createBitmap(srcBitmap.getWidth() + (mBorderWidth*2), srcBitmap.getHeight() + (mBorderWidth*2), srcBitmap.getConfig());
         Canvas canvas = new Canvas(bmpWithBorder);

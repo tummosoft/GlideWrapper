@@ -1,26 +1,17 @@
 package com.tummosoft.glide;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
-import android.graphics.drawable.PictureDrawable;
-import android.graphics.drawable.Drawable;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
-
-import anywheresoftware.b4a.BA;
 
 public class GlideSVG {
     public static final int DEFAULT_BUFFER_SIZE = 8192;

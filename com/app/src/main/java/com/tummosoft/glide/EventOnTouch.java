@@ -1,5 +1,7 @@
 package com.tummosoft.glide;
 
+import com.bumptech.glide.annotation.GlideType;
+
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,6 +17,7 @@ public class EventOnTouch implements View.OnTouchListener, View.OnClickListener 
     private boolean ResetStartPos;
     private int mBorderWidth, mBorderColor;
     private int mGlideType;
+    private int mRadius;
 
     public EventOnTouch(BA ba, String event, ImageView imageview) {
         mImageView = imageview;
@@ -23,10 +26,12 @@ public class EventOnTouch implements View.OnTouchListener, View.OnClickListener 
         mDetector = new GestureDetector(new eventGestureDetector(ba, eventname, mImageView));            
     }
 
-    public EventOnTouch(BA ba, String event, ImageView imageview, int borderWidth, int borderColor, int glideType) {
+    public EventOnTouch(BA ba, String event, ImageView imageview, int borderWidth, int borderColor, int glideType, int radius) {
         mBorderWidth = borderWidth;
         mBorderColor = borderColor;
         mGlideType = glideType;
+        mImageView = imageview;
+        mRadius = radius;
     }
 
     @Override
@@ -35,29 +40,29 @@ public class EventOnTouch implements View.OnTouchListener, View.OnClickListener 
                     final int actionCode = action & MotionEvent.ACTION_MASK;
                     boolean IsHandled = true;
 				if (mBA.subExists(eventname + "_ontouch")) {
-					Object Result = mBA.raiseEvent(mImageView, eventname + "_ontouch", ev.getX(), ev.getY());
+					Object Result = mBA.raiseEvent(mImageView, eventname + "_ontouch", ev.getRawX(), ev.getRawY());
 					if (Result instanceof Boolean)
 						IsHandled = (boolean) Result;
 				}
 				
 				if (actionCode == MotionEvent.ACTION_POINTER_DOWN && mBA.subExists(eventname + "_onpointerdown")) {
 					final int actionPtrIndex = (action & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT; 
-					mBA.raiseEvent(mImageView, eventname + "_onpointerdown", ev.getX(), ev.getY());
+					mBA.raiseEvent(mImageView, eventname + "_onpointerdown", ev.getRawX(), ev.getRawY());
 				}
 				else if (actionCode == MotionEvent.ACTION_POINTER_UP && mBA.subExists(eventname + "_onpointerup")) {
 					final int actionPtrIndex = (action & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
 					ResetStartPos = true;
-					mBA.raiseEvent(mImageView, eventname + "_onpointerup", ev.getX(), ev.getY());
+					mBA.raiseEvent(mImageView, eventname + "_onpointerup", ev.getRawX(), ev.getRawY());
 				}
                 else if (actionCode == MotionEvent.ACTION_UP) {
                     if (mBA.subExists(eventname + "_cancel")){
-						mBA.raiseEvent(mImageView, eventname + "_cancel", ev.getX(), ev.getY());
+						mBA.raiseEvent(mImageView, eventname + "_cancel", ev.getRawX(), ev.getRawY());
 					}
 				} else if (actionCode == MotionEvent.ACTION_DOWN) {
 					ResetStartPos = true;
                     
 					if (mBA.subExists(eventname + "_ondown")){
-						mBA.raiseEvent(mImageView, eventname + "_ondown", ev.getX(), ev.getY());
+						mBA.raiseEvent(mImageView, eventname + "_ondown", ev.getRawX(), ev.getRawY());
 					}
 				}
 				else if (actionCode == MotionEvent.ACTION_MOVE && mBA.subExists(eventname + "_ondrag")) {
@@ -84,17 +89,18 @@ public class EventOnTouch implements View.OnTouchListener, View.OnClickListener 
         @Override
         public void onClick(View arg0) {
             ImageView temp = mImageView;            
-                    GlideClickEvent evn = new GlideClickEvent();
-                    temp.setDrawingCacheEnabled(true);  
-                    int opt = mGlideType;
-                    
-                    switch (opt) {
-                        case 2:                                           
-                        evn.CircleClick(mImageView, temp, mBorderWidth, mBorderColor);                
-                            break;                
-                        default:
-                            break;
-                    }
+            GlideClickEvent evn = new GlideClickEvent();
+            temp.setDrawingCacheEnabled(true);  
+            int opt = mGlideType;
+            
+            switch (opt) {
+                case 2:                                           
+                    evn.CircleClick(mImageView, temp, mBorderWidth, mBorderColor);                
+                    break;                
+                default:
+                    evn.RectangleClick(mImageView, temp, mBorderWidth, mBorderColor, mRadius);
+                    break;
+            }
         }
 }  
 

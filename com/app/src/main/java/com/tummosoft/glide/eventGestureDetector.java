@@ -1,14 +1,10 @@
 package com.tummosoft.glide;
 
 import anywheresoftware.b4a.BA;
-import anywheresoftware.b4a.BA.Events;
-import android.content.ClipData;
 import android.graphics.Point;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.DragShadowBuilder;
-import android.view.View.OnTouchListener;
 import android.widget.ImageView;
 
 public class eventGestureDetector extends GestureDetector.SimpleOnGestureListener {
