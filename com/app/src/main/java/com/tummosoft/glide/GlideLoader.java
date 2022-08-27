@@ -19,11 +19,26 @@ import com.bumptech.glide.request.RequestOptions;
 import com.caverock.androidsvg.SVGParseException;
 
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.StrictMode;
+import android.util.TypedValue;
+import android.view.ViewAnimationUtils;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.graphics.Bitmap;
+import android.R;
+import android.R.anim;
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.content.res.TypedArray;
 
 @Version(2.02f)
 @ShortName("GlideLoader")
@@ -54,8 +69,7 @@ public class GlideLoader {
     private int mTouchType = 0;
     private String eventname;
     private anywheresoftware.b4a.objects.drawable.BitmapDrawable mBitmapCache;
-   
-    
+                
     public void initialize(BA ba, String EventName, ImageViewWrapper imv) {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -137,7 +151,7 @@ public class GlideLoader {
         mImageView.setLongClickable(true);
         mImageView.setBackgroundColor(Color.parseColor("#00000000"));
         
-        if (getTouchType() == 1) {
+        if (getTouchType() == 1) {                        
             mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType(), getCornerRadius()));
         } else if (getTouchType() == 2) {
             mImageView.setLongClickable(true);    
@@ -157,7 +171,7 @@ public class GlideLoader {
                 
         mImageView.setBackgroundColor(Color.parseColor("#00000000"));
         
-        if (getTouchType() == 1) {
+        if (getTouchType() == 1) {            
             mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType(), getCornerRadius()));
         } else if (getTouchType() == 2) {
             mImageView.setLongClickable(true);    
@@ -193,7 +207,12 @@ public class GlideLoader {
         }
         
         mImageView.setBackgroundColor(Color.parseColor("#00000000"));
-        if (getTouchType() == 1) {
+        TypedValue outValue = new TypedValue();
+        mBA.context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+        mImageView.setClickable(true);
+        mImageView.setBackgroundResource(outValue.resourceId);  
+        
+        if (getTouchType() == 1) {            
             mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType(), getCornerRadius()));
         } else if (getTouchType() == 2) {
             mImageView.setLongClickable(true);    
@@ -218,7 +237,7 @@ public class GlideLoader {
         
 		return  bm;
 	}
-    
+   
     // --------------------------------------
 
     public float getAlpha() {
@@ -360,7 +379,7 @@ public class GlideLoader {
     }
 
 	public void setGlideType(int value) {
-        mGravity = value;
+        mGravity = value;        
 	}
    // -------------------------------------
 
@@ -374,6 +393,63 @@ public class GlideLoader {
         new Thread( new Runnable() { @Override public void run() { 
             Glide.get(mBA.context).clearMemory();
           } } ).start();
-    }  
+    }
+    
+    public int getVisibility() {
+        return mImageView.getVisibility();
+    }
+
+    public void setVisibility(int value) {
+        mImageView.setVisibility(value);
+    }
+
+
+    public void TestAnimation() {
+        //ObjectAnimator scaleAnim = ObjectAnimator.ofFloat(mImageView, "scaleX", 1.0f, 2.0f);
+        //scaleAnim.setDuration(3000);
+        //scaleAnim.setRepeatCount(ValueAnimator.INFINITE);
+        //scaleAnim.setRepeatMode(ValueAnimator.REVERSE);
+        //scaleAnim.start();
+
         
+        //Animator anim =
+        //ViewAnimationUtils.createCircularReveal(mImageView, mImageView.getWidth()/2, mImageView.getHeight()/2, 0, 100);
+        //anim.setDuration(700);
+        //anim.start();
+
+        //ObjectAnimator fadeAnim = ObjectAnimator. .ofFloat(tvLabel, "alpha", 0.2f);
+        //fadeAnim.start();
+
+        // Create an array of the attributes we want to resolve
+    // using values from a theme
+    // android.R.attr.selectableItemBackground requires API LEVEL 11
+   // int[] attrs = new int[] { android.R.attr.selectableItemBackgroundBorderless /* index 0 */};
+
+    // Obtain the styled attributes. 'themedContext' is a context with a
+    // theme, typically the current Activity (i.e. 'this')
+    //TypedArray ta = mBA.context.obtainStyledAttributes(attrs);
+
+    // Now get the value of the 'listItemBackground' attribute that was
+    // set in the theme used in 'themedContext'. The parameter is the index
+    // of the attribute in the 'attrs' array. The returned Drawable
+    // is what you are after
+    //Drawable drawableFromTheme = ta.getDrawable(0 /* index */);
+
+    // Finally free resources used by TypedArray
+    //ta.recycle();
+
+    // setBackground(Drawable) requires API LEVEL 16, 
+    // otherwise you have to use deprecated setBackgroundDrawable(Drawable) method. 
+    //mImageView.setBackground(drawableFromTheme);
+    // imageButton.setBackgroundDrawable(drawableFromTheme);
+    //int[] attrs = new int[]{R.attr.actionBarTheme};
+    //TypedArray typedArray = mBA.context.obtainStyledAttributes(attrs);
+    //int backgroundResource = typedArray.getResourceId(0, 0);
+    //mImageView.setBackgroundResource(backgroundResource);
+    //typedArray.recycle();
+    TypedValue outValue = new TypedValue();
+    mBA.context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+    mImageView.setBackgroundResource(outValue.resourceId);                     
+    
+    }
 }

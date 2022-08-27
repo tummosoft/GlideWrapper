@@ -1,7 +1,8 @@
 package com.tummosoft.glide;
 
-import com.bumptech.glide.annotation.GlideType;
-
+import android.R;
+import android.content.res.TypedArray;
+import android.graphics.RectF;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,7 +19,8 @@ public class EventOnTouch implements View.OnTouchListener, View.OnClickListener 
     private int mBorderWidth, mBorderColor;
     private int mGlideType;
     private int mRadius;
-
+    private ImageView temp;     
+        
     public EventOnTouch(BA ba, String event, ImageView imageview) {
         mImageView = imageview;
         eventname = event;
@@ -32,6 +34,8 @@ public class EventOnTouch implements View.OnTouchListener, View.OnClickListener 
         mGlideType = glideType;
         mImageView = imageview;
         mRadius = radius;
+        eventname = event;
+        mBA = ba;
     }
 
     @Override
@@ -87,18 +91,29 @@ public class EventOnTouch implements View.OnTouchListener, View.OnClickListener 
         }
 
         @Override
-        public void onClick(View arg0) {
-            ImageView temp = mImageView;            
+        public void onClick(View arg0) {                  
             GlideClickEvent evn = new GlideClickEvent();
+            if (temp == null) {
+                temp = mImageView;
+            }
             temp.setDrawingCacheEnabled(true);  
             int opt = mGlideType;
             
             switch (opt) {
-                case 2:                                           
-                    evn.CircleClick(mImageView, temp, mBorderWidth, mBorderColor);                
+                case 2:    
+                           
+                    evn.CircleClick(mImageView, temp, mBorderWidth, mBorderColor);  
+                  
+                    if (mBA.subExists(eventname + "_click")){
+						mBA.raiseEvent(mImageView, eventname + "_click");
+					}              
                     break;                
                 default:
-                    evn.RectangleClick(mImageView, temp, mBorderWidth, mBorderColor, mRadius);
+                    //evn.RectangleClick(mImageView, temp, mBorderWidth, mBorderColor, mRadius);
+                    
+                    if (mBA.subExists(eventname + "_click")){
+						mBA.raiseEvent(mImageView, eventname + "_click");
+					}              
                     break;
             }
         }

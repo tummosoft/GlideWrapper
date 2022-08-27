@@ -78,6 +78,7 @@ public class CircleCropBorder extends BitmapTransformation {
         
         canvas.drawBitmap(srcBitmap, borderWidth, borderWidth, null);
         srcBitmap.recycle();
+        
         return dstBitmap;
     }   
 
