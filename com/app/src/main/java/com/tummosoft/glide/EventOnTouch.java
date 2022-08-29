@@ -1,13 +1,20 @@
 package com.tummosoft.glide;
 
+import java.io.IOException;
+
 import android.R;
 import android.content.res.TypedArray;
+import android.graphics.Matrix;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import anywheresoftware.b4a.BA;
+import anywheresoftware.b4a.keywords.Regex;
+import anywheresoftware.b4a.objects.collections.*;
+import anywheresoftware.b4a.objects.streams.File;
 
 public class EventOnTouch implements View.OnTouchListener, View.OnClickListener {
     private ImageView mImageView;
@@ -19,8 +26,8 @@ public class EventOnTouch implements View.OnTouchListener, View.OnClickListener 
     private int mBorderWidth, mBorderColor;
     private int mGlideType;
     private int mRadius;
-    private ImageView temp;     
-        
+    private ImageView temp;
+            
     public EventOnTouch(BA ba, String event, ImageView imageview) {
         mImageView = imageview;
         eventname = event;
@@ -110,12 +117,96 @@ public class EventOnTouch implements View.OnTouchListener, View.OnClickListener 
                     break;                
                 default:
                     //evn.RectangleClick(mImageView, temp, mBorderWidth, mBorderColor, mRadius);
-                    
+                    Map map1 = readCache();
+                    //File.Delete(File.getDirInternalCache(), "cache.txt");
+                    if (map1.getSize() > 0) {
+                        if (map1.ContainsKey(eventname) == true) {
+                            String temp1 = (String) map1.Get(eventname);
+                            String[] rec = Regex.Split(",", temp1);
+                            //BA.Log("Value:" + temp);
+                            RectF tempRectF = new RectF();
+                            tempRectF.left = Float.parseFloat(rec[0]);
+                            tempRectF.top = Float.parseFloat(rec[1]);
+                            tempRectF.right = Float.parseFloat(rec[2]);
+                            tempRectF.bottom = Float.parseFloat(rec[3]);
+                            //(final ImageView img, final ImageView backup, int borderWidth, int borderColor, int radius, RectF rect)
+                            evn.RectangleClick(mImageView, temp, mBorderWidth, mBorderColor, mRadius, tempRectF);
+                        }
+                    } else {
+                        RectF tempRectF = getBitmapPositionInsideImageView(mImageView);
+                        map1.Put(eventname, tempRectF.left + "," + tempRectF.top + "," + tempRectF.right + "," + tempRectF.bottom);
+                        saveCache(map1);
+                        evn.RectangleClick(mImageView, temp, mBorderWidth, mBorderColor, mRadius, tempRectF);
+                    }
+
                     if (mBA.subExists(eventname + "_click")){
 						mBA.raiseEvent(mImageView, eventname + "_click");
 					}              
                     break;
             }
         }
+        private Map readCache() {
+            Map map1 = new Map();
+            map1.Initialize();
+            try {
+                map1 = File.ReadMap(File.getDirInternalCache(), "cache.txt");                
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return map1;
+        }
+
+        private void saveCache(Map value) {
+            
+            try {
+              File.WriteMap(File.getDirInternalCache(), "cache.txt", value);
+            } catch (IOException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
+        }
+      
+        private static final RectF getBitmapPositionInsideImageView(ImageView imageView)
+        {
+          RectF rect = new RectF();
+      
+          if (imageView == null || imageView.getDrawable() == null)
+          {
+              return rect;
+          }
+      
+          // Get image dimensions
+          // Get image matrix values and place them in an array
+          float[] f = new float[9];
+          imageView.getImageMatrix().getValues(f);
+      
+          // Extract the scale values using the constants (if aspect ratio maintained, scaleX == scaleY)
+          final float scaleX = f[Matrix.MSCALE_X];
+          final float scaleY = f[Matrix.MSCALE_Y];
+      
+          // Get the drawable (could also get the bitmap behind the drawable and getWidth/getHeight)
+          final Drawable d     = imageView.getDrawable();
+          final int      origW = d.getIntrinsicWidth();
+          final int      origH = d.getIntrinsicHeight();
+      
+          // Calculate the actual dimensions
+          final int actW = Math.round(origW * scaleX);
+          final int actH = Math.round(origH * scaleY);
+      
+          // Get image position
+          // We assume that the image is centered into ImageView
+          int imgViewW = imageView.getWidth();
+          int imgViewH = imageView.getHeight();
+      
+          rect.top  = (int) (imgViewH - actH) / 2;
+          rect.left = (int) (imgViewW - actW) / 2;
+      
+          rect.bottom = rect.top + actH;
+          rect.right  = rect.left + actW;
+      
+          return rect;
+      }
+      
 }  
 

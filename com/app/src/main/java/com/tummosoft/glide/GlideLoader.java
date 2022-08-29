@@ -19,28 +19,23 @@ import com.bumptech.glide.request.RequestOptions;
 import com.caverock.androidsvg.SVGParseException;
 
 import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RippleDrawable;
 import android.net.Uri;
 import android.os.StrictMode;
 import android.util.TypedValue;
 import android.view.ViewAnimationUtils;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
-import android.graphics.Bitmap;
 import android.R;
-import android.R.anim;
 import android.animation.Animator;
-import android.animation.AnimatorSet;
+import android.animation.AnimatorInflater;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.content.res.TypedArray;
+import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 
-@Version(2.02f)
+@Version(2.03f)
 @ShortName("GlideLoader")
 @Events(values={"Click", "OnTouch(X As Float, Y As Float) As Boolean",
 "OnDown(X As Float, Y As Float)", "OnDrag(X As Float, Y As Float)",
@@ -58,10 +53,10 @@ public class GlideLoader {
     private Boolean mShadown = false;
     private int mCornerRadius = 1;
     private int mRotate = 0;
-    private int mBorderColor = Color.parseColor("#00000000");
-    private int mBackground = Color.parseColor("#00000000");
+    private int mBorderColor = 0;
+    private int mBackground = 0;
     private MultiTransformation multiTransformation = null;
-    private int mShadownColor = Color.parseColor("#00000000");
+    private int mShadownColor = 0;
     private Boolean mIsFilter = false;
     private int mFilterType = 0;
     private int mFilterColor = 0;
@@ -69,7 +64,15 @@ public class GlideLoader {
     private int mTouchType = 0;
     private String eventname;
     private anywheresoftware.b4a.objects.drawable.BitmapDrawable mBitmapCache;
-                
+    public TouchEffect TouchEffects;
+    private int mTouchEffect;
+    private int mStartColor = 0;
+    private int mEndColor = 0;
+    private int [] mPadding;
+    private int mAnimation = 0;
+    public AnimationType AnimationTypes;
+    private int mTox = 0;
+                           
     public void initialize(BA ba, String EventName, ImageViewWrapper imv) {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -85,22 +88,21 @@ public class GlideLoader {
         if (url.endsWith("svg")) {            
             try {
                 SVG(url);
-            } catch (SVGParseException e) {
-                // TODO Auto-generated catch block
+            } catch (SVGParseException e) {                
                 e.printStackTrace();
             }          
         } else {
             ReadURL(url);
         }
     }
-    
+
     private void SetOptions() {
         int opt = getGlideType();        
         callGlideType(opt);
         switch (opt) {
             case 2:
                 if (getShadown() == true) { 
-                    if (getFilter() == true) {
+                    if (getFilter() == true) {                        
                         if (mFilterType == 2) {
                             multiTransformation = new MultiTransformation<Bitmap>(
                             new CircleCropBorder(getBorderWidth(), getBorderColor(), getBackground()),
@@ -123,17 +125,41 @@ public class GlideLoader {
                     }
                     
                     break;        
-                } else {
-                    multiTransformation = new MultiTransformation<Bitmap>(
+                } else {                    
+                    multiTransformation = new MultiTransformation<Bitmap>(                    
                     new CircleCropBorder(getBorderWidth(), getBorderColor(), getBackground()));    
                     break;        
                 }                
-            default:
-                multiTransformation = new MultiTransformation<Bitmap>(
+            default:    
+            
+                if (mStartColor != 0) {                    
+                    multiTransformation = new MultiTransformation<Bitmap>(
                     new RoundedCorners(getCornerRadius()), 
                     new GlideShadow(getShadownColor()),                    
-                    new BorderImage(getBorderWidth(), getBorderColor(), getCornerRadius(), getBackground()),            
+                    new BorderImage(getBorderWidth(), getBorderColor(), getCornerRadius(), getBackground(), true, mStartColor, mEndColor, mPadding),            
                     new Rotate(mRotate));
+                } else if (getFilter() == true) {                        
+                        if (mFilterType == 2) {
+                            multiTransformation = new MultiTransformation<Bitmap>(                            
+                            new GlideBlurTransformation(getBlurRadius()));   
+                        } else if (mFilterType == 3) {
+                            multiTransformation = new MultiTransformation<Bitmap>(
+                            new ColorFilterTransformation(getFilterColor()));                          
+                        }  
+                } else {                    
+                    if (getCornerRadius() > 1) {                        
+                        multiTransformation = new MultiTransformation<Bitmap>(
+                        new RoundedCorners(getCornerRadius()), 
+                        new GlideShadow(getShadownColor()),                    
+                        new BorderImage(getBorderWidth(), getBorderColor(), getCornerRadius(), getBackground(), false, 0, 0, mPadding),            
+                        new Rotate(mRotate));
+                    } else {
+                        multiTransformation = new MultiTransformation<Bitmap>(
+                        new RoundedCorners(getCornerRadius()), 
+                        new GlideShadow(getShadownColor()),                                        
+                        new Rotate(mRotate));
+                    }                    
+                }   
                     break;
         }        
     }
@@ -144,20 +170,16 @@ public class GlideLoader {
             String path = f1.Combine(Dir, FileName);
         
         if (multiTransformation != null) {
-            Glide.with(mBA.context).load(path).apply(options).transform(multiTransformation).into(mImageView);      
-        } else {
-            Glide.with(mBA.context).load(path).apply(options).into(mImageView);      
+            Glide.with(mBA.context).asBitmap().load(path).apply(options).transform(multiTransformation).into(mImageView);      
+        } else {           
+            Glide.with(mBA.context).asBitmap().load(path).apply(options).into(mImageView);      
         }
         mImageView.setLongClickable(true);
-        mImageView.setBackgroundColor(Color.parseColor("#00000000"));
-        
-        if (getTouchType() == 1) {                        
-            mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType(), getCornerRadius()));
-        } else if (getTouchType() == 2) {
-            mImageView.setLongClickable(true);    
-            mImageView.setOnTouchListener(new EventOnTouch(mBA, eventname, mImageView));                   
+        if (getBackground() == 0) {
+            mImageView.setBackgroundColor(Color.parseColor("#00000000"));
         }
         
+        setTouchEffect();  
     }
 
     private void LoadRawable(Bitmap bm) {
@@ -169,21 +191,18 @@ public class GlideLoader {
             Glide.with(mBA.context).load(bm).apply(options).into(mImageView);      
         }
                 
-        mImageView.setBackgroundColor(Color.parseColor("#00000000"));
-        
-        if (getTouchType() == 1) {            
-            mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType(), getCornerRadius()));
-        } else if (getTouchType() == 2) {
-            mImageView.setLongClickable(true);    
-            mImageView.setOnTouchListener(new EventOnTouch(mBA, eventname, mImageView));                   
+        if (getBackground() == 0) {
+            mImageView.setBackgroundColor(Color.parseColor("#00000000"));
         }
+        
+        setTouchEffect();
     }
 
     // ------------------ SVG --------------------------------------
     private void SVG(String url) throws SVGParseException {
         anywheresoftware.b4a.objects.streams.File f1 = new anywheresoftware.b4a.objects.streams.File();
         String path = f1.Combine(File.getDirInternalCache(), "out.xml");
-        //options.format(DecodeFormat.PREFER_ARGB_8888);
+        
         GlideSVG svg = new GlideSVG(path);
         try {           
             Bitmap bm = svg.GetFormURL(url);
@@ -206,20 +225,34 @@ public class GlideLoader {
             Glide.with(mBA.context).load(uri).apply(options).into(mImageView);      
         }
         
-        mImageView.setBackgroundColor(Color.parseColor("#00000000"));
-        TypedValue outValue = new TypedValue();
-        mBA.context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
-        mImageView.setClickable(true);
-        mImageView.setBackgroundResource(outValue.resourceId);  
-        
-        if (getTouchType() == 1) {            
-            mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType(), getCornerRadius()));
+        if (getBackground() == 0) {
+            mImageView.setBackgroundColor(Color.parseColor("#00000000"));
+        }
+                
+        setTouchEffect();
+    }
+    
+    private void setTouchEffect() {
+        if (getTouchType() == 1) { 
+            if (getTouchEffect() == 1) {
+                mImageView.setOnClickListener(new EventOnTouch(mBA, eventname, mImageView, getBorderWidth(), getBorderColor(), getGlideType(), getCornerRadius()));
+            } else if (getTouchEffect() == 2) {
+                TypedValue outValue = new TypedValue();
+                mBA.context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+                mImageView.setClickable(true);
+                mImageView.setBackgroundResource(outValue.resourceId);  
+            } else if (getTouchEffect() == 3) {
+                TypedValue outValue = new TypedValue();
+                mBA.context.getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, outValue, true);
+                mImageView.setClickable(true);
+                mImageView.setBackgroundResource(outValue.resourceId);  
+            }
         } else if (getTouchType() == 2) {
             mImageView.setLongClickable(true);    
             mImageView.setOnTouchListener(new EventOnTouch(mBA, eventname, mImageView));                   
-        }        
+        }       
     }
-
+    
     public void reSize(int width, int height) {
         options.override(width, height);
     }
@@ -237,7 +270,27 @@ public class GlideLoader {
         
 		return  bm;
 	}
-   
+    
+    // --------------------------------------
+
+    public void GradientBackground(int startColor, int endColor) {
+        mStartColor = startColor;
+        mEndColor = endColor;
+
+	}
+
+    public void setPadding(int[] value) {
+        mPadding = value;
+	}
+     // --------------------------------------
+
+     public int getTouchEffect() {
+		return mTouchEffect;
+	}
+
+	public void setTouchEffect(int value) {
+        mTouchEffect = value;
+	}
     // --------------------------------------
 
     public float getAlpha() {
@@ -386,7 +439,18 @@ public class GlideLoader {
     public void ClearDiskCache() {
         new Thread( new Runnable() { @Override public void run() { 
             Glide.get(mBA.context).clearDiskCache();
-          } } ).start();            
+          } } ).start();   
+
+          try {
+            if (File.Exists(File.getDirInternalCache(), "cache.txt")) {
+                File.Delete(File.getDirInternalCache(), "cache.txt");
+              }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }         
+
+          
     }
     
     public void ClearMemory() {   
@@ -402,20 +466,34 @@ public class GlideLoader {
     public void setVisibility(int value) {
         mImageView.setVisibility(value);
     }
+    // ------------------------------
+    public void setToX(int value) {
+        mTox = value;
+    }
+    // ------------------------------
+    public int getAnimation() {
+        return mAnimation;
+    }
 
-
+    public void setAnimation(int value) {
+        mAnimation = value;
+        if (value == 1) {
+            Animator anim =
+            ViewAnimationUtils.createCircularReveal(mImageView, mImageView.getWidth()/2, mImageView.getHeight()/2, 0, mImageView.getWidth());
+            anim.setDuration(2000);            
+            anim.start();
+        } else if (value == 2) {
+            ObjectAnimator animation = ObjectAnimator.ofFloat(mImageView,"translationX", mTox);
+            animation.setDuration(3000);
+            animation.start();    
+        }
+    }
+    
     public void TestAnimation() {
-        //ObjectAnimator scaleAnim = ObjectAnimator.ofFloat(mImageView, "scaleX", 1.0f, 2.0f);
-        //scaleAnim.setDuration(3000);
-        //scaleAnim.setRepeatCount(ValueAnimator.INFINITE);
-        //scaleAnim.setRepeatMode(ValueAnimator.REVERSE);
-        //scaleAnim.start();
-
-        
-        //Animator anim =
-        //ViewAnimationUtils.createCircularReveal(mImageView, mImageView.getWidth()/2, mImageView.getHeight()/2, 0, 100);
-        //anim.setDuration(700);
-        //anim.start();
+       
+        ObjectAnimator animation = ObjectAnimator.ofFloat(mImageView,"translationX", -1000);
+        animation.setDuration(4000);
+        animation.start();
 
         //ObjectAnimator fadeAnim = ObjectAnimator. .ofFloat(tvLabel, "alpha", 0.2f);
         //fadeAnim.start();
@@ -447,9 +525,14 @@ public class GlideLoader {
     //int backgroundResource = typedArray.getResourceId(0, 0);
     //mImageView.setBackgroundResource(backgroundResource);
     //typedArray.recycle();
-    TypedValue outValue = new TypedValue();
-    mBA.context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
-    mImageView.setBackgroundResource(outValue.resourceId);                     
+    //TypedValue outValue = new TypedValue();
+    //mBA.context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+    //mImageView.setBackgroundResource(outValue.resourceId);                     
     
+    //mImageView.animate().scaleX(0.7f).scaleY(0.7f).setDuration(150).setInterpolator(DECCELERATE_INTERPOLATOR);
+    //mImageView.animate().scaleX(1).scaleY(1).setInterpolator(DECCELERATE_INTERPOLATOR);
+    
+
     }
+        
 }

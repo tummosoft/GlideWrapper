@@ -55,8 +55,6 @@ protected Bitmap transform(BitmapPool pool, Bitmap sourceBitmap, int outWidth, i
     sourceBitmap.getConfig() != null ? sourceBitmap.getConfig() : Bitmap.Config.ARGB_8888;
     Bitmap bitmap = pool.get(width, height, config);
 
-    //setCanvasBitmapDensity(sourceBitmap, bitmap);
-
     Canvas canvas = new Canvas(bitmap);
     Paint paint = new Paint();
     paint.setAntiAlias(true);

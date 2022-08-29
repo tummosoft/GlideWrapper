@@ -41,7 +41,7 @@ public void updateDiskCacheKey(MessageDigest arg0) {
 }
 
 @Override
-protected Bitmap transform(BitmapPool pool, Bitmap sourceBitmap, int outWidth, int outHeight) {
+protected Bitmap transform(BitmapPool pool, Bitmap sourceBitmap, int outWidth, int outHeight) {   
     int width = sourceBitmap.getWidth();
     int height = sourceBitmap.getHeight();
     int scaledWidth = width / sampling;
